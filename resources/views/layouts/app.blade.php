@@ -6,7 +6,7 @@
   <title>@yield('title', 'NovaBank')</title>
 
   {{-- Your CSS in public/css/novabank.css --}}
-  <link rel="stylesheet" href="{{ asset('css/novabank.css') }}">
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
 

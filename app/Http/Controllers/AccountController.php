@@ -13,7 +13,7 @@ class AccountController extends Controller
         return view('accounts.index', compact('accounts'));
     }
     public function show(Account $account){
-        $this->authorizeAccount($accounts);
+        $this->authorizeAccount($account);
 
         $transactions = $account->transactions()->paginate(15);
 

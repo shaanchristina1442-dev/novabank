@@ -11,54 +11,51 @@ use Illuminate\Http\Request;
 class TransferController extends Controller
 {
     public function store(Request $request){
+
         $request->validate([
-            'from_account_id' => ['required', 'integer'],
-            'to_account_id' => ['required', 'integer', 'diffferent:from_account_id'],
-            'amount' => ['required', 'numeric','min:0.01'],
-
+            'from_account_id' => 'required|exists:accounts,id',
+            'to_account_id' => 'required|exists:accounts,id',
+            'amount' => 'required|numeric|min:0.01',
         ]);
+        
+        $user = auth()->user();
+        $fromAccount = Account::where('id', $request->from_account_id)
+            ->where('user_id', $user->id)   
+            ->firstOrFail();
+        $toAccount = Account::where('id', $request->to_account_id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+        
+        if ($fromAccount->balance < $request->amount) {
+            return back()->withErrors(['amount' => 'Insufficient funds in the source account.']);
+        }
 
-        $amount = round((float)$request->amount, 2);
+        DB::transaction(function () use ($fromAccount, $toAccount, $request){
+            $fromAccount->decrement('balance', $request->amount);
+            $toAccount->increment('balance', $request->amount);
 
-        DB::transaction(function() use($request, $amount){
-            $from = Account::where('id', $request->from_account_id)
-                ->where('user_id', auth()->id())
-                ->lockForUpdate()
-                ->firstOrFail();
-            $to = Account::where('id', $request->to_account_id)
-                ->where('user_id', auth()->id())
-                ->lockForUpdate()
-                ->firstOrFail();
-            if ($from->balance < $amount){
-                abort(422, 'Insufficent funds');
-            }
-
-            $from->decrement('balance', $amount);
-            $to->increment('balance', $amount);
-
-            Transfer::create([
-                'from_account_id' => $from->id,
-                'to_account_id' => $to->id,
-                'amount' => $amount,
+            Transactions::create([
+                'user_id' => auth()->id(),
+                'account_id' => $fromAccount->id,
+                'amount' => $request->amount,
+                'type' => 'debit',
+                'description' => 'Transfer to account #' . $toAccount->id,
             ]);
             Transactions::create([
-                'account_id' => $from->id,
-                'type'=> 'transfer_out',
-                'amount' => $amount,
-                'description' => 'Transfer to' .$to->name,
-
-
+                'user_id' => auth()->id(),
+                'account_id' => $toAccount->id,
+                'amount' => $request->amount,
+                'type' => 'credit',
+                'description' => 'Transfer from account #' . $fromAccount->id,
             ]);
-            Transactions::create([
-                'account_id' => $to->id,
-                'type'=> 'transfer_to',
-                'amount' => $amount,
-                'description' => 'Transfer from' .$from->name,
-            ]);
-
-
         });
-        return back()->with('sucess', 'Transfer recieved');
 
+
+        
+    
+
+        
+        return redirect()->route('dashboard')->with('success', 'Transfer completed successfully.');
     }
+
 }

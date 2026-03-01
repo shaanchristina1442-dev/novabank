@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>@yield('title', 'NovaBank')</title>
-  <link rel="stylesheet" href="{{ asset('css/novabank.css') }}">
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
 
@@ -24,19 +24,9 @@
     </div>
   </header>
 
-  <main class="main">
-    <div class="container">
-
-      @if(session('success'))
-        <div class="flash success">{{ session('success') }}</div>
-      @endif
-
-      @if(session('error'))
-        <div class="flash error">{{ session('error') }}</div>
-      @endif
-
-      @yield('content')
-    </div>
+  <main class="container">
+    @yield('content')
+    
   </main>
 
 </body>

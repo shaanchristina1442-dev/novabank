@@ -9,7 +9,7 @@
   <div class="grid">
     <section class="panel">
       <div class="panel-title">Deposit</div>
-      <form method="POST" action="{{ route('accounts.deposit', $account) }}" class="form">
+      <form method="POST" action="{{ route('account.deposit', $account) }}" class="form">
         @csrf
         <div class="field">
           <label>Amount</label>
@@ -21,11 +21,16 @@
         </div>
         <button class="btn primary" type="submit">Deposit</button>
       </form>
+      <form method="POST" action="{{ route('account.deposit.store', $account) }}" class="form">
+        @csrf
+        <input type="number" name="amount" step="0.01" min="0.01" required>
+        <button type="submit">Deposit</button>
+      </form>
     </section>
 
     <section class="panel">
       <div class="panel-title">Withdraw</div>
-      <form method="POST" action="{{ route('accounts.withdraw', $account) }}" class="form">
+      <form method="POST" action="{{ route('account.withdraw', $account) }}" class="form">
         @csrf
         <div class="field">
           <label>Amount</label>
@@ -37,6 +42,12 @@
         </div>
         <button class="btn danger" type="submit">Withdraw</button>
       </form>
+      <form method="POST" action="{{ route('account.withdraw.store', $account) }}" class="form">
+        @csrf
+        <input type="number" name="amount" step="0.01" min="0.01" required>
+        <button type="submit">Withdraw</button>
+      </form>
+
     </section>
   </div>
 

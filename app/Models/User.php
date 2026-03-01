@@ -46,12 +46,12 @@ class User extends Authenticatable
         ];
     }
     public function accounts(){
-        return $this->hasMany(\APP\Models\Account::class);
+        return $this->hasMany(\App\Models\Account::class);
     }
     public function transactions(){
-        return $this->hasMany(\APP\Models\Transactions::class);
+        return $this->hasMany(\App\Models\Transactions::class);
     }
     public function transfers(){
-        return $this->hasMany(\APP\Models\Transfer::class);
+        return $this->hasMany(\App\Models\Transfer::class);
     }
 }

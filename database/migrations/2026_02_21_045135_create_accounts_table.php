@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->decimal('balance', 12, 2);
+            $table->decimal('balance', 12, 2)->default(0);
             $table->timestamps();
         });
     }
