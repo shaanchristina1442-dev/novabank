@@ -1,106 +1,225 @@
-
 @extends('layouts.app') 
+
+ 
+
+@section('title', 'Dashboard') 
 
  
 
 @section('content') 
 
- 
+<div class="page"> 
 
-<div class="container mx-auto px-6 py-8"> 
+  <div class="page-head"> 
 
- 
+    <div> 
 
-    <h1 class="text-3xl font-bold mb-6">NovaBank Dashboard</h1> 
+      <h1 class="h1">NovaBank Dashboard</h1> 
 
- 
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6"> 
-
- 
-
-        <!-- Total Balance Card --> 
-
-        <div class="bg-white shadow-lg rounded-2xl p-6"> 
-
-            <h2 class="text-gray-500 text-sm uppercase">Total Balance</h2> 
-
-            <p class="text-3xl font-bold text-green-600 mt-2">$12,450.00</p> 
-
-        </div> 
-
- 
-
-        <!-- Accounts Card --> 
-
-        <div class="bg-white shadow-lg rounded-2xl p-6"> 
-
-            <h2 class="text-gray-500 text-sm uppercase">Accounts</h2> 
-
-            <p class="text-3xl font-bold mt-2">2</p> 
-
-        </div> 
-
- 
-
-        <!-- Transactions Card --> 
-
-        <div class="bg-white shadow-lg rounded-2xl p-6"> 
-
-            <h2 class="text-gray-500 text-sm uppercase">Recent Transactions</h2> 
-
-            <p class="text-3xl font-bold mt-2">5</p> 
-
-        </div> 
-
- 
+      <p class="sub">Overview of your accounts and recent activity</p> 
 
     </div> 
 
  
 
-    <!-- Recent Activity Section --> 
+    <div class="head-actions"> 
 
-    <div class="mt-10 bg-white shadow-lg rounded-2xl p-6"> 
+      <a class="btn btn-ghost" href="{{ route('accounts.index') }}">View Accounts</a> 
 
-        <h2 class="text-xl font-semibold mb-4">Recent Activity</h2> 
+      <a class="btn btn-primary" href="{{ route('accounts.index') }}">New Transaction</a> 
+
+    </div> 
+
+  </div> 
 
  
 
-        <ul class="space-y-3"> 
+  {{-- STAT CARDS --}} 
 
-            <li class="flex justify-between border-b pb-2"> 
+  <div class="cards"> 
 
-                <span>Starbucks</span> 
+    <div class="card stat"> 
 
-                <span class="text-red-500">- $12.45</span> 
+      <div class="stat-label">Total Balance</div> 
 
-            </li> 
+      <div class="stat-value">${{ number_format($totalBalance ?? 0, 2) }}</div> 
 
-            <li class="flex justify-between border-b pb-2"> 
-
-                <span>Paycheck Deposit</span> 
-
-                <span class="text-green-600">+ $2,000.00</span> 
-
-            </li> 
-
-            <li class="flex justify-between border-b pb-2"> 
-
-                <span>Amazon</span> 
-
-                <span class="text-red-500">- $54.99</span> 
-
-            </li> 
-
-        </ul> 
+      <div class="stat-meta">Across all accounts</div> 
 
     </div> 
 
  
+
+    <div class="card stat"> 
+
+      <div class="stat-label">Accounts</div> 
+
+      <div class="stat-value">{{ $accountsCount ?? 0 }}</div> 
+
+      <div class="stat-meta">Checking + Savings</div> 
+
+    </div> 
+
+ 
+
+    <div class="card stat"> 
+
+      <div class="stat-label">Recent Transactions</div> 
+
+      <div class="stat-value">{{ $recentCount ?? 0 }}</div> 
+
+      <div class="stat-meta">Last 30 days</div> 
+
+    </div> 
+
+  </div> 
+
+ 
+
+  <div class="grid-2"> 
+
+    {{-- QUICK ACTIONS --}} 
+
+    <div class="card"> 
+
+      <div class="card-head"> 
+
+        <h2 class="h2">Quick Actions</h2> 
+
+        <span class="pill">Fast</span> 
+
+      </div> 
+
+ 
+
+      <div class="quick"> 
+
+        <a class="quick-item" href="{{ route('accounts.index') }}"> 
+
+          <div class="quick-title">Deposit</div> 
+
+          <div class="quick-sub">Add funds to an account</div> 
+
+        </a> 
+
+ 
+
+        <a class="quick-item" href="{{ route('accounts.index') }}"> 
+
+          <div class="quick-title">Withdraw</div> 
+
+          <div class="quick-sub">Record a withdrawal</div> 
+
+        </a> 
+
+ 
+
+        <a class="quick-item" href="{{ route('accounts.index') }}"> 
+
+          <div class="quick-title">Transfer</div> 
+
+          <div class="quick-sub">Move money between accounts</div> 
+
+        </a> 
+
+ 
+
+        <a class="quick-item" href="{{ route('accounts.index') }}"> 
+
+          <div class="quick-title">Statements</div> 
+
+          <div class="quick-sub">See recent history</div> 
+
+        </a> 
+
+      </div> 
+
+    </div> 
+
+ 
+
+    {{-- RECENT ACTIVITY --}} 
+
+    <div class="card"> 
+
+      <div class="card-head"> 
+
+        <h2 class="h2">Recent Activity</h2> 
+
+        <a class="link" href="{{ route('accounts.index') }}">See all</a> 
+
+      </div> 
+
+ 
+
+      <div class="table-wrap"> 
+
+        <table class="table"> 
+
+          <thead> 
+
+            <tr> 
+
+              <th>Description</th> 
+
+              <th>Type</th> 
+
+              <th class="right">Amount</th> 
+
+              <th class="right">Date</th> 
+
+            </tr> 
+
+          </thead> 
+
+          <tbody> 
+
+            @forelse(($recentTransactions ?? []) as $t) 
+
+              <tr> 
+
+                <td class="mono">{{ $t->description }}</td> 
+
+                <td> 
+
+                  <span class="badge {{ $t->type === 'credit' ? 'badge-green' : 'badge-red' }}"> 
+
+                    {{ strtoupper($t->type) }} 
+
+                  </span> 
+
+                </td> 
+
+                <td class="right {{ $t->type === 'credit' ? 'pos' : 'neg' }}"> 
+
+                  {{ $t->type === 'credit' ? '+' : '-' }}${{ number_format(abs($t->amount), 2) }} 
+
+                </td> 
+
+                <td class="right muted">{{ optional($t->created_at)->format('M d') }}</td> 
+
+              </tr> 
+
+            @empty 
+
+              <tr> 
+
+                <td colspan="4" class="muted">No transactions yet.</td> 
+
+              </tr> 
+
+            @endforelse 
+
+          </tbody> 
+
+        </table> 
+
+      </div> 
+
+    </div> 
+
+  </div> 
 
 </div> 
-
- 
 
 @endsection 
