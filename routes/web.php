@@ -23,10 +23,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/accounts/{account}', [AccountController::class, 'show'])->name('accounts.show');
     //deposit and withdraw
     Route::get('/accounts/{account}/deposit', [AccountController::class, 'deposit'])->name('account.deposit');
-    Route::post('/accounts/{account}/deposit', [AccountController::class, 'depositStore'])->name('account.deposit.store');
+    Route::post('/accounts/{account}/deposit', [AccountController::class, 'deposit'])->name('account.deposit.store');
+    //withdraws
     Route::get('/accounts/{account}/withdraw', [AccountController::class, 'withdraw'])->name('account.withdraw');
-    Route::post('/accounts/{account}/withdraw', [AccountController::class, 'withdrawStore'])->name('account.withdraw.store');
-
+    Route::post('/accounts/{account}/withdraw', [AccountController::class, 'withdraw'])->name('account.withdraw.store');
+    //transfer
+    
 });
 
 require __DIR__.'/auth.php';

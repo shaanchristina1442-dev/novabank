@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Transactions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AccountController extends Controller
 {
@@ -28,7 +29,7 @@ class AccountController extends Controller
             'name' => $request->name,
             'balance' => 0,
         ]);
-        return redirect()->route('accounts.index')->width('success', 'Account created.');
+        return redirect()->route('accounts.index')->with('success', 'Account created.');
 
     }
     public function deposit(Request $request, Account $account){
@@ -39,14 +40,16 @@ class AccountController extends Controller
         ]);
         $amount = round((float)$request->amount, 2);
 
+        $amount->increment('balance', $amount);
+
         Transactions::create([
-            'account_id'=> $account->id(),
+            'account_id'=> $account->id,
             'type' => 'deposit',
             'amount' => $amount,
-            'description'=> $request->Input('description', 'Deposit.'),
+            'description'=> $request->input('description', 'Deposit.'),
 
         ]);
-        return back()->width('success', 'deposit recieved');
+        return back()->with('success', 'deposit recieved');
 
 
     }
@@ -67,10 +70,10 @@ class AccountController extends Controller
             'account_id' => $account->id,
             'type' => 'withdrawal',
             'amount' => $amount,
-            'description' => $request-Input('description', 'withdrawn')
+            'description' => $request->input('description', 'withdrawn')
 
         ]);
-        return back()->with('sucess', 'Withdrawal recieved');
+        return back()->with('success', 'Withdrawal recieved');
     }
     public function depositStore(Request $request, Account $account){
         $this->authorizeAccount($account);
@@ -113,6 +116,12 @@ class AccountController extends Controller
     public function transfer(Request $request, Account $account){
         $account = Account::where('id', '!=', $account->id)->get();
         return view('accounts.transfer', compact('account'));
+
+        $request->validate([
+            'to_account_id' => ['required', 'exists:accounts, id'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'description' => ['nullable', 'string', 'max:255'],
+        ]);
     }
     public function transferStore(Request $request, Account $account){
         $request->validate([
@@ -127,7 +136,7 @@ class AccountController extends Controller
             return back()->with('error', 'Insufficient funds.');
         }
         DB::transaction(function () use ($account, $toAccount, $amount) {
-            $account->$balance -= $amount;
+            $account->balance -= $amount;
             $account->save();
 
             $toAccount->balance += $amount;
