@@ -28,7 +28,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/accounts/{account}/withdraw', [AccountController::class, 'withdraw'])->name('account.withdraw');
     Route::post('/accounts/{account}/withdraw', [AccountController::class, 'withdraw'])->name('account.withdraw.store');
     //transfer
-    
+    Route::get('/accounts/{account}/transfer', [AccountController::class, 'transfer'])->name('account.transfer');
+    Route::post('/accounts/{account}/transfer', [AccountController::class, 'transferStore'])->name('account.transfer.store');
 });
 
 require __DIR__.'/auth.php';

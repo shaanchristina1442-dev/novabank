@@ -25,12 +25,16 @@
 
   <main class="container">
     @if (session('success'))
-      <div class="alert success">{{ session('success') }}</div>
+      <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if (session('error'))
+      <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
     @if ($errors->any())
-      <div class="alert danger">
-        <ul>
+      <div class="alert alert-danger">
+        <ul style="margin:0;padding-left:18px;">
           @foreach ($errors->all() as $err)
             <li>{{ $err }}</li>
           @endforeach
