@@ -3,19 +3,23 @@
 @section('title', $account->name)
 
 @section('content')
+
   <div class="page-head row">
     <div>
-      <h1>{{ $account->name }}</h1>
-      <p class="muted">Current balance</p>
+      <h1 class="h1">{{ $account->name }}</h1>
+      <div class="muted text-sm">Acct ●●●● {{ str_pad($account->id, 4, '0', STR_PAD_LEFT) }}</div>
     </div>
-    <div class="big-number">${{ number_format($account->balance, 2) }}</div>
+    <div>
+      <div class="muted text-xs" style="margin-bottom:2px;text-align:right;">Available Balance</div>
+      <div class="big-number">${{ number_format($account->balance, 2) }}</div>
+    </div>
   </div>
 
-  <div class="grid-3">
+  <div class="grid-3" style="margin-bottom:20px;">
 
     {{-- Deposit --}}
     <div class="card">
-      <div class="card-title">Deposit</div>
+      <div class="card-title">Deposit Funds</div>
       <form method="POST" action="{{ route('account.deposit', $account) }}" class="form">
         @csrf
         <div>
@@ -23,8 +27,8 @@
           <input class="input" type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00">
         </div>
         <div>
-          <label class="label">Description (optional)</label>
-          <input class="input" type="text" name="description" placeholder="Paycheck...">
+          <label class="label">Description <span class="muted text-xs">(optional)</span></label>
+          <input class="input" type="text" name="description" placeholder="e.g. Paycheck">
         </div>
         <button class="btn btn-success" type="submit">Deposit</button>
       </form>
@@ -32,7 +36,7 @@
 
     {{-- Withdraw --}}
     <div class="card">
-      <div class="card-title">Withdraw</div>
+      <div class="card-title">Withdraw Funds</div>
       <form method="POST" action="{{ route('account.withdraw', $account) }}" class="form">
         @csrf
         <div>
@@ -40,8 +44,8 @@
           <input class="input" type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00">
         </div>
         <div>
-          <label class="label">Description (optional)</label>
-          <input class="input" type="text" name="description" placeholder="Groceries...">
+          <label class="label">Description <span class="muted text-xs">(optional)</span></label>
+          <input class="input" type="text" name="description" placeholder="e.g. Groceries">
         </div>
         <button class="btn btn-danger" type="submit">Withdraw</button>
       </form>
@@ -49,9 +53,9 @@
 
     {{-- Transfer --}}
     <div class="card">
-      <div class="card-title">Transfer</div>
+      <div class="card-title">Transfer Funds</div>
       @if($accounts->isEmpty())
-        <p class="muted text-sm">No other accounts to transfer to.</p>
+        <p class="muted text-sm">No other accounts available to transfer to.</p>
       @else
         <form method="POST" action="{{ route('account.transfer.store', $account) }}" class="form">
           @csrf
@@ -68,8 +72,8 @@
             <input class="input" type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00">
           </div>
           <div>
-            <label class="label">Description (optional)</label>
-            <input class="input" type="text" name="description" placeholder="Rent...">
+            <label class="label">Description <span class="muted text-xs">(optional)</span></label>
+            <input class="input" type="text" name="description" placeholder="e.g. Rent">
           </div>
           <button class="btn" type="submit">Transfer</button>
         </form>
@@ -78,12 +82,15 @@
 
   </div>
 
-  {{-- Transactions --}}
-  <div class="card mt">
-    <div class="card-title">Transaction History</div>
+  {{-- Transaction History --}}
+  <div class="card">
+    <div class="card-head">
+      <h2 class="h2">Transaction History</h2>
+      <span class="pill">{{ $transactions->total() }} total</span>
+    </div>
 
     @if($transactions->isEmpty())
-      <p class="muted">No transactions yet.</p>
+      <p class="muted" style="padding:16px 0;">No transactions yet.</p>
     @else
       <div class="table-wrap">
         <table class="table">
@@ -104,7 +111,7 @@
                   </span>
                 </td>
                 <td class="muted">{{ $t->description ?? '—' }}</td>
-                <td class="right {{ $t->type === 'credit' ? 'text-good' : 'text-bad' }} bold">
+                <td class="right bold {{ $t->type === 'credit' ? 'text-good' : 'text-bad' }}">
                   {{ $t->type === 'credit' ? '+' : '-' }}${{ number_format($t->amount, 2) }}
                 </td>
                 <td class="right muted text-sm">{{ $t->created_at->format('M d, Y g:i A') }}</td>
@@ -116,4 +123,5 @@
       <div class="mt">{{ $transactions->links() }}</div>
     @endif
   </div>
+
 @endsection
