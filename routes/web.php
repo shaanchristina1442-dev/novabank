@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\CreditCardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
@@ -38,6 +39,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/payments/{payment}/edit', [PaymentController::class, 'edit'])->name('payment.edit');
     Route::put('/payments/{payment}', [PaymentController::class, 'update'])->name('payment.update');
     Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payment.destroy');
+    //credit cards
+    Route::get('/creditCards', [CreditCardController::class, 'index'])->name('creditCard.index');
+    Route::get('/creditCards/create', [CreditCardController::class, 'create'])->name('creditCard.create');
+    Route::post('/creditCards', [CreditCardController::class, 'store'])->name('creditCard.store');
+    Route::get('/creditCards/{creditCard}', [CreditCardController::class, 'show'])->name('creditCard.show');
+    Route::get('/creditCards/{creditCard}/edit', [CreditCardController::class, 'edit'])->name('creditCard.edit');
+    Route::put('/creditCards/{creditCard}', [CreditCardController::class, 'update'])->name('creditCard.update');
+    Route::delete('/creditCards/{creditCard}', [CreditCardController::class, 'destroy'])->name('creditCard.destroy');
+
+
 });
 
 require __DIR__.'/auth.php';

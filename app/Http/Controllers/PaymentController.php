@@ -5,80 +5,96 @@ namespace App\Http\Controllers;
 use App\Models\Transactions;
 use App\Models\Payment;
 use App\Models\Account;
+use App\Models\CreditCard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 
 class PaymentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $payments = Payment::where('user_id', auth()->id())->latest()->get();
         return view('payment.index', compact('payments'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $accounts = Account::where('user_id', auth()->id())->get();
-        return view('payment.create', compact('accounts'));
+        $accounts    = Account::where('user_id', auth()->id())->get();
+        $creditCards = CreditCard::where('user_id', auth()->id())->where('status', 'active')->get();
+        return view('payment.create', compact('accounts', 'creditCards'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
-            'account_id' => ['required', 'exists:accounts,id'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
-            'recipient' => ['required', 'string', 'max:255'],
-            'description_for_payment' => ['nullable', 'string', 'max:200']
+            'payment_source'          => ['required', 'in:account,credit_card'],
+            'account_id'              => ['required_if:payment_source,account', 'nullable', 'exists:accounts,id'],
+            'credit_card_id'          => ['required_if:payment_source,credit_card', 'nullable', 'exists:credit_cards,id'],
+            'amount'                  => ['required', 'numeric', 'min:0.01'],
+            'recipient'               => ['required', 'string', 'max:255'],
+            'description_for_payment' => ['nullable', 'string', 'max:200'],
         ]);
-
-        $account = Account::findOrFail($request->account_id);
-
-        if ($account->user_id !== auth()->id()) {
-            abort(403);
-        }
 
         $amount = round((float) $request->amount, 2);
 
-        if ($account->balance < $amount) {
-            return back()->withErrors(['amount' => 'Insufficient funds.'])->withInput();
+        if ($request->payment_source === 'account') {
+            $account = Account::findOrFail($request->account_id);
+            if ($account->user_id !== auth()->id()) abort(403);
+
+            if ($account->balance < $amount) {
+                return back()->withErrors(['amount' => 'Insufficient funds.'])->withInput();
+            }
+
+            DB::transaction(function () use ($account, $amount, $request) {
+                $account->decrement('balance', $amount);
+
+                Transactions::create([
+                    'user_id'     => auth()->id(),
+                    'account_id'  => $account->id,
+                    'amount'      => $amount,
+                    'type'        => 'debit',
+                    'description' => 'Payment to ' . $request->recipient,
+                ]);
+
+                Payment::create([
+                    'user_id'        => auth()->id(),
+                    'account_id'     => $account->id,
+                    'payment_source' => 'account',
+                    'amount'         => $amount,
+                    'recipient'      => $request->recipient,
+                    'description'    => $request->input('description_for_payment', 'Payment to recipient.'),
+                    'status'         => 'completed',
+                ]);
+            });
+
+        } else {
+            $card = CreditCard::findOrFail($request->credit_card_id);
+            if ($card->user_id !== auth()->id()) abort(403);
+
+            $available = $card->credit_limit - $card->current_balance;
+            if ($available < $amount) {
+                return back()->withErrors(['amount' => 'Insufficient credit. Available: $' . number_format($available, 2)])->withInput();
+            }
+
+            DB::transaction(function () use ($card, $amount, $request) {
+                $card->increment('current_balance', $amount);
+
+                Payment::create([
+                    'user_id'        => auth()->id(),
+                    'credit_card_id' => $card->id,
+                    'payment_source' => 'credit_card',
+                    'amount'         => $amount,
+                    'recipient'      => $request->recipient,
+                    'description'    => $request->input('description_for_payment', 'Payment to recipient.'),
+                    'status'         => 'completed',
+                ]);
+            });
         }
 
-        DB::transaction(function () use ($account, $amount, $request) {
-            $account->decrement('balance', $amount);
-
-            Transactions::create([
-                'account_id' => $account->id,
-                'amount' => $amount,
-                'type' => 'debit',
-                'description' => 'Payment to ' . $request->recipient,
-            ]);
-
-            Payment::create([
-                'user_id' => auth()->id(),
-                'account_id' => $account->id,
-                'amount' => $amount,
-                'recipient' => $request->recipient,
-                'description' => $request->input('description_for_payment', 'Payment to recipient.'),
-                'status' => 'completed',
-            ]);
-        });
-
-        return redirect()->route('payment.index')->with('success', 'Payment completed');
+        return redirect()->route('payment.index')->with('success', 'Payment completed.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Payment $payment)
     {
         if ($payment->user_id !== auth()->id()) {
@@ -87,9 +103,6 @@ class PaymentController extends Controller
         return view('payment.show', compact('payment'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Payment $payment)
     {
         if ($payment->user_id !== auth()->id()) {
@@ -98,9 +111,6 @@ class PaymentController extends Controller
         return view('payment.edit', compact('payment'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Payment $payment)
     {
         if ($payment->user_id !== auth()->id()) {
@@ -108,48 +118,64 @@ class PaymentController extends Controller
         }
 
         $request->validate([
-            'amount' => ['required', 'numeric', 'min:0.01'],
-            'recipient' => ['required', 'string', 'max:255'],
-            'description_for_payment' => ['nullable', 'string', 'max:200']
+            'amount'                  => ['required', 'numeric', 'min:0.01'],
+            'recipient'               => ['required', 'string', 'max:255'],
+            'description_for_payment' => ['nullable', 'string', 'max:200'],
         ]);
 
         $newAmount = round((float) $request->amount, 2);
-        $delta = $newAmount - $payment->amount;
-        $account = Account::findOrFail($payment->account_id);
+        $delta     = $newAmount - $payment->amount;
 
-        if ($delta > 0 && $account->balance < $delta) {
-            return back()->withErrors(['amount' => 'Insufficient funds.'])->withInput();
+        if ($payment->payment_source === 'account') {
+            $account = Account::findOrFail($payment->account_id);
+            if ($delta > 0 && $account->balance < $delta) {
+                return back()->withErrors(['amount' => 'Insufficient funds.'])->withInput();
+            }
+            DB::transaction(function () use ($payment, $account, $newAmount, $delta, $request) {
+                if ($delta != 0) $account->decrement('balance', $delta);
+                $payment->update([
+                    'amount'      => $newAmount,
+                    'recipient'   => $request->recipient,
+                    'description' => $request->input('description_for_payment', $payment->description),
+                ]);
+            });
+
+        } else {
+            $card      = CreditCard::findOrFail($payment->credit_card_id);
+            $available = $card->credit_limit - $card->current_balance;
+            if ($delta > 0 && $available < $delta) {
+                return back()->withErrors(['amount' => 'Insufficient credit. Available: $' . number_format($available, 2)])->withInput();
+            }
+            DB::transaction(function () use ($payment, $card, $newAmount, $delta, $request) {
+                if ($delta != 0) $card->increment('current_balance', $delta);
+                $payment->update([
+                    'amount'      => $newAmount,
+                    'recipient'   => $request->recipient,
+                    'description' => $request->input('description_for_payment', $payment->description),
+                ]);
+            });
         }
 
-        DB::transaction(function () use ($payment, $account, $newAmount, $delta, $request) {
-            if ($delta !== 0.0) {
-                $account->decrement('balance', $delta);
-            }
-
-            $payment->update([
-                'amount' => $newAmount,
-                'recipient' => $request->recipient,
-                'description' => $request->input('description_for_payment', $payment->description),
-            ]);
-        });
-
-        return redirect()->route('payment.index')->with('success', 'Payment updated');
+        return redirect()->route('payment.index')->with('success', 'Payment updated.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Payment $payment)
     {
         if ($payment->user_id !== auth()->id()) {
             abort(403);
         }
+
         DB::transaction(function () use ($payment) {
-            $account = Account::findOrFail($payment->account_id);
-            $account->increment('balance', $payment->amount);
+            if ($payment->payment_source === 'account') {
+                $account = Account::findOrFail($payment->account_id);
+                $account->increment('balance', $payment->amount);
+            } else {
+                $card = CreditCard::findOrFail($payment->credit_card_id);
+                $card->decrement('current_balance', $payment->amount);
+            }
             $payment->delete();
         });
 
-        return redirect()->route('payment.index')->with('success', 'Payment voided');
+        return redirect()->route('payment.index')->with('success', 'Payment voided.');
     }
 }
