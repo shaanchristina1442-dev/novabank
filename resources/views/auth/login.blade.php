@@ -1,47 +1,56 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+  <x-auth-session-status class="mb-4" :status="session('status')" />
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+  <div style="margin-bottom:28px;">
+    <h1 style="font-size:1.7rem;font-weight:800;color:var(--text);margin:0 0 6px;letter-spacing:-.4px;">Welcome back</h1>
+    <p style="color:var(--muted);font-size:.9rem;margin:0;">Sign in to your NovaBank account</p>
+  </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+  @if($errors->any())
+    <div class="alert alert-danger" style="margin-bottom:20px;">
+      @foreach($errors->all() as $error)
+        <div>{{ $error }}</div>
+      @endforeach
+    </div>
+  @endif
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+  <form method="POST" action="{{ route('login') }}" class="form">
+    @csrf
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+    <div>
+      <label class="label" for="email">Email Address</label>
+      <input class="input" id="email" type="email" name="email"
+        value="{{ old('email') }}" required autofocus autocomplete="username"
+        placeholder="you@example.com">
+    </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <label class="label" for="password" style="margin:0;">Password</label>
+        @if (Route::has('password.request'))
+          <a href="{{ route('password.request') }}" class="link" style="font-size:.8rem;">Forgot password?</a>
+        @endif
+      </div>
+      <input class="input" id="password" type="password" name="password"
+        required autocomplete="current-password" placeholder="••••••••">
+    </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
+    <div style="display:flex;align-items:center;gap:8px;">
+      <input id="remember_me" type="checkbox" name="remember"
+        style="width:15px;height:15px;accent-color:var(--brand);cursor:pointer;">
+      <label for="remember_me" style="font-size:.875rem;color:var(--muted);cursor:pointer;">Remember me for 30 days</label>
+    </div>
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
+    <button type="submit" class="btn btn-lg" style="width:100%;margin-top:4px;">
+      Sign In to NovaBank
+    </button>
+
+  </form>
+
+  <p style="text-align:center;margin-top:24px;font-size:.875rem;color:var(--muted);">
+    Don't have an account?
+    <a href="{{ route('register') }}" class="link" style="font-weight:600;">Create one</a>
+  </p>
+
 </x-guest-layout>
