@@ -9,7 +9,8 @@
 - 🔐 **User Authentication** — Secure login and registration
 - 📊 **Dashboard** — Balance overview with account summaries at a glance
 - 🏧 **Account Management** — Create and manage multiple bank accounts
-- 💸 **Transaction Tracking** — Full deposit, withdrawal, and transfer history
+- 💸 **Transaction Tracking** — Full deposit, withdrawal, and transfer histor
+-  **Credit Card Feature** - New feature to create, customize, and pay with credit cards(debit cards coming soon!).
 - 📱 **Responsive UI** — Optimized for desktop and mobile
 - ⚡ **Modern Asset Building** — Powered by Vite for fast frontend tooling
 - 🗄️ **MySQL Integration** — Schema managed via Laravel migrations
