@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('credit_cards', function (Blueprint $table) {
+        Schema::create('_debit__card', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->string('card_number')->unique();
-            $table->decimal('credit_limit', 12, 2);
-            $table->decimal('current_balance', 12, 2);
+            $table->decimal('debit_balance', 12, 2)->default(0);
             $table->string('status')->default('active');
             $table->timestamps();
         });
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('credit_cards');
+        Schema::dropIfExists('_debit__card');
     }
 };

@@ -29,7 +29,7 @@
           <div style="position:absolute;bottom:-50px;right:40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
 
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;position:relative;">
-            <div style="font-size:1.1rem;font-weight:700;letter-spacing:.5px;">NovaBank</div>
+            <div style="font-size:1.1rem;font-weight:700;letter-spacing:.5px;">NovaBank Resolution</div>
             <span style="background:rgba(255,255,255,.18);border-radius:20px;padding:3px 12px;font-size:.75rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;">
               {{ $card->status }}
             </span>

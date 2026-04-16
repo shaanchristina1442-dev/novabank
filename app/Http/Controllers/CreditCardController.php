@@ -47,6 +47,12 @@ class CreditCardController extends Controller
         return view('creditCard.show', compact('creditCard'));
     }
 
+    public function edit(CreditCard $creditCard)
+    {
+        if ($creditCard->user_id !== auth()->id()) abort(403);
+        return view('creditCard.edit', compact('creditCard'));
+    }
+
     public function update(Request $request, CreditCard $creditCard)
     {
         if ($creditCard->user_id !== auth()->id()) {

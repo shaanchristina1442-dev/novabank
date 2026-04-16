@@ -10,6 +10,7 @@ class Payment extends Model
         'user_id',
         'account_id',
         'credit_card_id',
+        'debit_card_id',
         'payment_source',
         'amount',
         'recipient',
@@ -31,5 +32,10 @@ class Payment extends Model
     public function creditCard()
     {
         return $this->belongsTo(CreditCard::class);
+    }
+
+    public function debitCard()
+    {
+        return $this->belongsTo(DebitCard::class);
     }
 }

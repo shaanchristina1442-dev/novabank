@@ -5,6 +5,7 @@ use App\Http\Controllers\CreditCardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DebitCardController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -47,7 +48,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/creditCards/{creditCard}/edit', [CreditCardController::class, 'edit'])->name('creditCard.edit');
     Route::put('/creditCards/{creditCard}', [CreditCardController::class, 'update'])->name('creditCard.update');
     Route::delete('/creditCards/{creditCard}', [CreditCardController::class, 'destroy'])->name('creditCard.destroy');
-
+    //debit cards
+    Route::get('/debitCards', [DebitCardController::class, 'index'])->name('debitCard.index');
+    Route::get('/debitCards/create', [DebitCardController::class, 'create'])->name('debitCard.create');
+    Route::post('/debitCards', [DebitCardController::class, 'store'])->name('debitCard.store');
+    Route::get('/debitCards/{debitCard}', [DebitCardController::class, 'show'])->name('debitCard.show');
+    Route::get('/debitCards/{debitCard}/edit', [DebitCardController::class, 'edit'])->name('debitCard.edit');
+    Route::put('/debitCards/{debitCard}', [DebitCardController::class, 'update'])->name('debitCard.update');
+    Route::delete('/debitCards/{debitCard}', [DebitCardController::class, 'destroy'])->name('debitCard.destroy');
 
 });
 
