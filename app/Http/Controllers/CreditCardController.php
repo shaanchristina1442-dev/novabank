@@ -41,7 +41,7 @@ class CreditCardController extends Controller
 
     public function show(CreditCard $creditCard)
     {
-        if ($creditCard->user_id !== auth()->id()) {
+        if ($creditCard->user_id != auth()->id()) {
             abort(403);
         }
         return view('creditCard.show', compact('creditCard'));
@@ -49,13 +49,15 @@ class CreditCardController extends Controller
 
     public function edit(CreditCard $creditCard)
     {
-        if ($creditCard->user_id !== auth()->id()) abort(403);
+        if ($creditCard->user_id != auth()->id()){
+            abort(403);
+        }
         return view('creditCard.edit', compact('creditCard'));
     }
 
     public function update(Request $request, CreditCard $creditCard)
     {
-        if ($creditCard->user_id !== auth()->id()) {
+        if ($creditCard->user_id != auth()->id()) {
             abort(403);
         }
 
@@ -76,7 +78,7 @@ class CreditCardController extends Controller
 
     public function destroy(CreditCard $creditCard)
     {
-        if ($creditCard->user_id !== auth()->id()) {
+        if ($creditCard->user_id != auth()->id()) {
             abort(403);
         }
         $creditCard->delete();

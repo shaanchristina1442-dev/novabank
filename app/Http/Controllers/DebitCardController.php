@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\DebitCard;
 
 class DebitCardController extends Controller
 {
     public function index()
     {
-        $debitCards = DebitCard::where('user_id', auth()->id())->get();
+        $debitCards = DebitCard::where('user_id', Auth::id())->get();
         return view('debitCard.index', compact('debitCards'));
     }
 
@@ -28,7 +29,7 @@ class DebitCardController extends Controller
         ]);
 
         DebitCard::create([
-            'user_id'       => auth()->id(),
+            'user_id'       => Auth::id(),
             'name'          => $request->name,
             'card_number'   => $request->card_number,
             'debit_balance' => round((float) $request->debit_balance, 2),
@@ -40,19 +41,19 @@ class DebitCardController extends Controller
 
     public function show(DebitCard $debitCard)
     {
-        if ($debitCard->user_id !== auth()->id()) abort(403);
+        if ($debitCard->user_id != Auth::id()) abort(403);
         return view('debitCard.show', compact('debitCard'));
     }
 
     public function edit(DebitCard $debitCard)
     {
-        if ($debitCard->user_id !== auth()->id()) abort(403);
+        if ($debitCard->user_id != Auth::id()) abort(403);
         return view('debitCard.edit', compact('debitCard'));
     }
 
     public function update(Request $request, DebitCard $debitCard)
     {
-        if ($debitCard->user_id !== auth()->id()) abort(403);
+        if ($debitCard->user_id != Auth::id()) abort(403);
 
         $request->validate([
             'name'          => ['required', 'string', 'max:100'],
@@ -71,7 +72,7 @@ class DebitCardController extends Controller
 
     public function destroy(DebitCard $debitCard)
     {
-        if ($debitCard->user_id !== auth()->id()) abort(403);
+        if ($debitCard->user_id != Auth::id()) abort(403);
         $debitCard->delete();
         return redirect()->route('debitCard.index')->with('success', 'Debit card deleted.');
     }
